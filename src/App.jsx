@@ -1,14 +1,34 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 
+// GitHub raw URL for images
+const GITHUB_IMAGES_BASE = 'https://raw.githubusercontent.com/israelvaday/tab-viewer/master/public/images'
+
+// Available songs config - images on GitHub, data local
+const SONGS = {
+  'radiohead-creep': {
+    dataFile: '/all_versions_data.json',
+    albumImage: `${GITHUB_IMAGES_BASE}/album_cover.jpg`,
+    artistImage: `${GITHUB_IMAGES_BASE}/artist_cover.jpg`
+  },
+  'oasis-wonderwall': {
+    dataFile: '/wonderwall_data.json',
+    albumImage: `${GITHUB_IMAGES_BASE}/oasis-wonderwall/album_cover.jpg`,
+    artistImage: `${GITHUB_IMAGES_BASE}/oasis-wonderwall/artist_cover.jpg`
+  }
+}
+
 function App() {
+  const [songKey, setSongKey] = useState('oasis-wonderwall')
   const [data, setData] = useState(null)
   const [versionIdx, setVersionIdx] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    fetch('/all_versions_data.json')
+    setLoading(true)
+    const song = SONGS[songKey]
+    fetch(song.dataFile)
       .then(res => {
         if (!res.ok) throw new Error('Failed to load data')
         return res.json()
@@ -25,7 +45,7 @@ function App() {
         setError(err.message)
         setLoading(false)
       })
-  }, [])
+  }, [songKey])
 
   if (loading) {
     return (
@@ -68,29 +88,41 @@ function App() {
   }
 
   const getDifficulty = () => version.ug_difficulty || version.list_difficulty || 'N/A'
+  const song = SONGS[songKey]
 
   return (
     <div className="app">
       {/* Header */}
       <header>
         <div className="header-main">
-          <img src="/images/album_cover.jpg" alt="Album" className="album-img" />
+          <img src={song.albumImage} alt="Album" className="album-img" />
           <div>
             <h1>{data.song_name}</h1>
             <p className="artist">{data.artist_name}</p>
           </div>
         </div>
-        <select 
-          value={versionIdx} 
-          onChange={e => setVersionIdx(Number(e.target.value))}
-          className="version-select"
-        >
-          {versions.map((v, i) => (
-            <option key={i} value={i}>
-              {v.type || 'Unknown'} v{v.version || i+1} - {v.ug_difficulty || v.list_difficulty || 'N/A'}
-            </option>
-          ))}
-        </select>
+        <div className="header-controls">
+          <select 
+            value={songKey}
+            onChange={e => setSongKey(e.target.value)}
+            className="song-select"
+          >
+            {Object.keys(SONGS).map(key => (
+              <option key={key} value={key}>{key.replace('-', ' - ').replace(/\b\w/g, c => c.toUpperCase())}</option>
+            ))}
+          </select>
+          <select 
+            value={versionIdx} 
+            onChange={e => setVersionIdx(Number(e.target.value))}
+            className="version-select"
+          >
+            {versions.map((v, i) => (
+              <option key={i} value={i}>
+                {v.type || 'Unknown'} v{v.version || i+1} - {v.ug_difficulty || v.list_difficulty || 'N/A'}
+              </option>
+            ))}
+          </select>
+        </div>
       </header>
 
       {/* Info Bar */}

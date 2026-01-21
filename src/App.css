@@ -78,6 +78,13 @@ header .artist {
   object-fit: cover;
 }
 
+.header-controls {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.song-select,
 .version-select {
   background: #252525;
   color: #fff;
@@ -89,6 +96,7 @@ header .artist {
   min-width: 180px;
 }
 
+.song-select:focus,
 .version-select:focus {
   outline: none;
   border-color: #ff6b35;
